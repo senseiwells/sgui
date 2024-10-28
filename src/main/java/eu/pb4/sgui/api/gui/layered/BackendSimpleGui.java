@@ -48,4 +48,14 @@ class BackendSimpleGui extends SimpleGui {
     public void afterOpen() {
         this.gui.afterOpen();
     }
+
+    @Override
+    public boolean canPlayerClose() {
+        return this.gui.canPlayerClose();
+    }
+
+    @Override
+    public boolean resetMousePosition() {
+        return this.gui.resetMousePosition();
+    }
 }
