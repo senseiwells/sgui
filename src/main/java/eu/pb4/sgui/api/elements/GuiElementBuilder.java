@@ -351,11 +351,10 @@ public class GuiElementBuilder implements GuiElementBuilderInterface<GuiElementB
     /**
      * Sets the custom model data of the element.
      *
-     * @param value the value used for custom model data
      * @return this element builder
      */
-    public GuiElementBuilder setCustomModelData(int value) {
-        this.itemStack.set(DataComponentTypes.CUSTOM_MODEL_DATA, new CustomModelDataComponent(value));
+    public GuiElementBuilder setCustomModelData(List<Float> floats, List<Boolean> flags, List<String> strings, List<Integer> colors) {
+        this.itemStack.set(DataComponentTypes.CUSTOM_MODEL_DATA, new CustomModelDataComponent(floats, flags, strings, colors));
         return this;
     }
 

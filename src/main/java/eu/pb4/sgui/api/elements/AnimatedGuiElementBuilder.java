@@ -326,11 +326,10 @@ public class AnimatedGuiElementBuilder implements GuiElementBuilderInterface<Ani
     /**
      * Sets the custom model data of the element.
      *
-     * @param value the value used for custom model data
      * @return this element builder
      */
-    public AnimatedGuiElementBuilder setCustomModelData(int value) {
-        this.itemStack.set(DataComponentTypes.CUSTOM_MODEL_DATA, new CustomModelDataComponent(value));
+    public AnimatedGuiElementBuilder setCustomModelData(List<Float> floats, List<Boolean> flags, List<String> strings, List<Integer> colors) {
+        this.itemStack.set(DataComponentTypes.CUSTOM_MODEL_DATA, new CustomModelDataComponent(floats, flags, strings, colors));
         return this;
     }
 
