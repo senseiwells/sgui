@@ -124,47 +124,38 @@ public interface SlotGuiInterface extends SlotHolder, GuiInterface {
     }
 
     default boolean insertItem(ItemStack stack, int startIndex, int endIndex, boolean fromLast) {
-        boolean bl = false;
+        boolean modified = false;
         int i = startIndex;
         if (fromLast) {
             i = endIndex - 1;
         }
 
-        Slot slot;
-        ItemStack itemStack;
         if (stack.isStackable()) {
-            while(!stack.isEmpty()) {
-                if (fromLast) {
-                    if (i < startIndex) {
-                        break;
-                    }
-                } else if (i >= endIndex) {
-                    break;
-                }
-
-                slot = this.getSlotRedirectOrPlayer(i);
+            while (!stack.isEmpty() && (fromLast ? i >= startIndex : i < endIndex)) {
+                var slot = this.getSlotRedirectOrPlayer(i);
                 if (slot != null && slot.canInsert(stack)) {
-                    itemStack = slot.getStack();
-                    if (!itemStack.isEmpty() && ItemStack.areItemsAndComponentsEqual(stack, itemStack)) {
-                        int j = itemStack.getCount() + stack.getCount();
-                        if (j <= stack.getMaxCount()) {
+                    var stackInSlot = slot.getStack();
+                    if (!stackInSlot.isEmpty() && ItemStack.areItemsAndComponentsEqual(stack, stackInSlot)) {
+                        var totalCount = stackInSlot.getCount() + stack.getCount();
+                        var maxSize = slot.getMaxItemCount(stackInSlot);
+                        if (totalCount <= maxSize) {
                             stack.setCount(0);
-                            itemStack.setCount(j);
+                            stackInSlot.setCount(totalCount);
                             slot.markDirty();
-                            bl = true;
-                        } else if (itemStack.getCount() < stack.getMaxCount()) {
-                            stack.decrement(stack.getMaxCount() - itemStack.getCount());
-                            itemStack.setCount(stack.getMaxCount());
+                            modified = true;
+                        } else if (stackInSlot.getCount() < maxSize) {
+                            stack.decrement(maxSize - stackInSlot.getCount());
+                            stackInSlot.setCount(maxSize);
                             slot.markDirty();
-                            bl = true;
+                            modified = true;
                         }
                     }
                 }
 
                 if (fromLast) {
-                    --i;
+                    i--;
                 } else {
-                    ++i;
+                    i++;
                 }
             }
         }
@@ -176,39 +167,27 @@ public interface SlotGuiInterface extends SlotHolder, GuiInterface {
                 i = startIndex;
             }
 
-            while(true) {
-                if (fromLast) {
-                    if (i < startIndex) {
-                        break;
-                    }
-                } else if (i >= endIndex) {
-                    break;
-                }
-
-                slot = this.getSlotRedirectOrPlayer(i);
-                if (slot != null) {
-                    itemStack = slot.getStack();
-                    if (itemStack.isEmpty() && slot.canInsert(stack)) {
-                        if (stack.getCount() > slot.getMaxItemCount()) {
-                            slot.setStack(stack.split(slot.getMaxItemCount()));
-                        } else {
-                            slot.setStack(stack.split(stack.getCount()));
-                        }
-
+            while (fromLast ? i >= startIndex : i < endIndex) {
+                var slot = this.getSlotRedirectOrPlayer(i);
+                if (slot != null && slot.canInsert(stack)) {
+                    var stackInSlot = slot.getStack();
+                    if (stackInSlot.isEmpty() && slot.canInsert(stack)) {
+                        int maxSize = slot.getMaxItemCount(stack);
+                        slot.setStack(stack.split(Math.min(stack.getCount(), maxSize)));
                         slot.markDirty();
-                        bl = true;
+                        modified = true;
                         break;
                     }
                 }
 
                 if (fromLast) {
-                    --i;
+                    i--;
                 } else {
-                    ++i;
+                    i++;
                 }
             }
         }
 
-        return bl;
-    };
+        return modified;
+    }
 }
